@@ -1,0 +1,165 @@
+//=============================================================================
+//
+// リソースマネージャー処理 [resource_manager.cpp]
+// Author : Konishi Yuuto
+//
+//=============================================================================
+
+//=============================================================================
+// インクルード
+//=============================================================================
+#include "resource_manager.h"
+#include "texture.h"
+#include "xfile.h"
+#include "sound.h"
+#include "particle_texture.h"
+//=============================================================================
+// static初期化宣言
+//=============================================================================
+CResourceManager *CResourceManager::m_pResourceManager = nullptr;	// 自身のポインタ
+
+//=============================================================================
+// コンストラクタ
+//=============================================================================
+CResourceManager::CResourceManager()
+{
+	m_pTexture = nullptr;	// テクスチャのポインタ
+	m_pXFile = nullptr;		// Xファイルのポインタ
+	m_pSound = nullptr;		// サウンドのポインタ
+	m_pParticle_Texture = nullptr;
+}
+
+//=============================================================================
+// デストラクタ
+//=============================================================================
+CResourceManager::~CResourceManager()
+{
+	// アンロード処理
+	UnLoadAll();
+}
+
+//=============================================================================
+// 初期化処理
+//=============================================================================
+HRESULT CResourceManager::Init(void)
+{
+	// nullcheck
+	if (m_pTexture == nullptr)
+	{
+		// テクスチャのインスタンス生成
+		m_pTexture = CTexture::Create();
+	}
+
+	// nullcheck
+	if (m_pXFile == nullptr)
+	{
+		// Xファイルのインスタンス生成
+		m_pXFile = CXfile::Create();
+	}
+
+	// nullcheck
+	if (m_pSound == nullptr)
+	{
+		// サウンドのインスタンス生成
+		m_pSound = CSound::Create();
+	}
+
+	// nullcheck
+	if (m_pParticle_Texture == nullptr)
+	{
+		// サウンドのインスタンス生成
+		m_pParticle_Texture = new CParticle_Texture;
+	}
+
+	return S_OK;
+}
+
+//=============================================================================
+// ロード処理
+//=============================================================================
+void CResourceManager::LoadAll(void)
+{
+	// !nullcheck
+	if (m_pTexture != nullptr)
+	{
+		// テクスチャロード
+		m_pTexture->LoadAll();
+	}
+
+	// !nullcheck
+	if (m_pXFile != nullptr)
+	{
+		// モデルロード
+		m_pXFile->LoadAll();
+	}
+
+	// !nullcheck
+	if (m_pParticle_Texture != nullptr)
+	{
+		// 初期化
+		m_pParticle_Texture->Init();
+	}
+}
+
+//=============================================================================
+// アンロード処理
+//=============================================================================
+void CResourceManager::UnLoadAll(void)
+{
+	// !nullcheck
+	if (m_pTexture != nullptr)
+	{
+		// テクスチャのアンロード
+		m_pTexture->UnLoadAll();
+		delete m_pTexture;
+		m_pTexture = nullptr;
+	}
+
+	// !nullcheck
+	if (m_pXFile != nullptr)
+	{
+		// テクスチャアンロード
+		m_pXFile->UnLoadAll();
+		delete m_pXFile;
+		m_pXFile = nullptr;
+	}
+
+	// nullcheck
+	if (m_pSound != nullptr)
+	{
+		// 終了処理
+		m_pSound->Uninit();
+		delete m_pSound;
+		m_pSound = nullptr;
+	}
+	// !nullcheck
+	if (m_pParticle_Texture != nullptr)
+	{
+		// 終了処理
+		m_pParticle_Texture->Uninit();
+		delete m_pParticle_Texture;
+		m_pParticle_Texture = nullptr;
+	}
+}
+
+//=============================================================================
+// インスタンス取得関数
+//=============================================================================
+CResourceManager * CResourceManager::GetInstance(void)
+{
+	// nullcheck
+	if (m_pResourceManager == nullptr)
+	{
+		// メモリ確保
+		m_pResourceManager = new CResourceManager;
+
+		// !nullcheck
+		if (m_pResourceManager != nullptr)
+		{
+			// 初期化処理
+			m_pResourceManager->Init();
+		}
+	}
+
+	return m_pResourceManager;
+}
